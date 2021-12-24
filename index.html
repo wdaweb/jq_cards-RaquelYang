@@ -128,8 +128,7 @@
       
     </div>
   </div>
-  <!-- alert 遊戲規則 -->
-  <script src="./jquery-3.6.0.min.js"></script>
+<script src="./jquery-3.6.0.min.js"></script>
   
 <script> 
 // 過關的動畫  
@@ -238,11 +237,12 @@ let text = ''
 let title = ''
 type = []
 let index = 0
+let timer = ''
 function write(index) {
   if (index < type.length) {
     description.innerHTML += type[index]
-    let timer = setTimeout(write.bind(this), 250, ++index)
-  }else{
+    timer = setTimeout(write.bind(this), 250, ++index)
+  }else if(index == type.length){
     clearInterval(timer)
   }
 }
