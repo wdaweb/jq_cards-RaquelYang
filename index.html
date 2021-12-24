@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100;300;400;500;700;900&display=swap"
+    rel="stylesheet">
+  <title>Document</title>
+  <style>
+    body{
+      background-color: rgb(253, 247, 239);
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+    .container{
+      width: 1210px;
+      background:url('./images/background/背景.png') no-repeat center/cover;
+      margin: auto;
+    }
+    .text{
+      height: 120px;
+    }
+    .text p{
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 1rem;
+    }
+    #game{
+      width: 100%;
+      height: 500px;
+      margin: auto;
+      display: flex;  
+      justify-content: center;
+      align-items: center;    
+    }
+    #left,#right{
+      width: 45%;
+      height: 75%;
+      /* background-color: antiquewhite; */
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+    #left{
+      padding-right: 1rem; 
+    }
+    #right{
+      padding-left: 1rem;
+    }
+    .card{
+    width: 20%;
+    height: 30%;
+    position: relative;
+    /* 設定子元素在3D 空間內 */
+    transform-style: preserve-3d;
+    margin: 30px 10px ;
+    transition:  1s;
+    }
+    .card-front{
+      width: 100%;
+      height: 100%;
+      background: url('./撲克牌/1H.jpg') no-repeat center/contain;
+      position: absolute;
+      /* 把div 轉180deg */
+      transform: rotateY(180deg);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .card-back{
+      width: 100%;
+      height: 100%;
+      background: url('./images/card-back.jpg') no-repeat center/contain;
+      position: absolute;
+      /* 翻過後隱藏另一面 */
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .card-open{
+      transform: rotateY(180deg);
+    }
+    .description{
+      height: 110px;
+      font-size: 1.4rem; 
+      padding: 0.8rem 2rem;
+      position: relative;
+      letter-spacing: 3px;
+      color: #fff;
+      /* background: orange; */
+    }
+    .description::after{
+      content: '|';
+      animation: type 1.2s infinite;
+      color: #333;
+      font-size: 1.5rem;
+      padding:0 .3rem;
+      position: absolute;
+      color: #fff;
+      line-height: 2rem;
+      
+    }
+    @keyframes type{
+      0%,100%{
+        opacity: 0;
+      }
+      30%,70%{
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <audio id="audio"></audio>
+  <div class="container">
+    <div class="text">
+      
+    </div>
+    <div id="game">
+      <div id="left"></div>
+      <div id="right"></div>
+    </div>
+    <div class="description">
+      遊戲規則：選擇一個節日並對應到相應日期
+      
+    </div>
+  </div>
+  <!-- alert 遊戲規則 -->
+  <script src="./jquery-3.6.0.min.js"></script>
+  
+<script> 
+// 過關的動畫  
+Swal.fire({
+  // 加動畫
+  title: '恭喜過關',
+  text:'123',
+  width: 600,
+  padding: '3em',
+  imageUrl:'images/minion-congrats.gif',
+  timer:3000,
+  background: '#fff',
+  showConfirmButton:false
+  })
+Swal.fire(
+  '遊戲規則',
+  '選擇一個節日對應到相對的日期',
+  'info'
+)
+for (let i = 0; i < 8; i++) {
+    $('#left').append(`
+    <div class="card">
+      <div class="card-front"></div>
+      <div class="card-back"></div>
+    </div>
+  `)
+  $('#right').append(`
+    <div class="card">
+      <div class="card-front"></div>
+      <div class="card-back"></div>
+    </div>
+  `)
+}
+
+let templeft = 0
+let tempright = 1
+let festival = [];
+for (let i = 0; i < 8; i++) {
+  const num = i % 8 + 1
+  $('#left .card').eq(i).find('.card-front').css('background', `url(./images/節日/${num}.jpg) no-repeat center/contain`)
+  $('#left .card').eq(i).attr('data-card', num)
+  // 打散
+  const target = Math.round(Math.random() * 7)
+  $('#left .card').eq(target).insertAfter($('#left .card').eq(i))
+}
+for (let i = 0; i < 8; i++) {
+  const num = i % 8 + 1
+  $('#right .card').eq(i).find('.card-front').css('background', `url(./images/日期/${num}.jpg) no-repeat center/contain`)
+  $('#right .card').eq(i).attr('data-card-1', num)
+  const target = Math.round(Math.random() * 7)
+  $('#right .card').eq(target).insertAfter($('#right .card').eq(i))
+}
+$('#left').on('click','.card',function(){
+  if($('#left .card-open').length < 1 && !$(this).hasClass('card-open')){
+    $(this).addClass('card-open')
+    // console.log($('#left .card-open').eq(0).attr('data-card'));
+    templeft = $('#left .card-open').eq(0).attr('data-card')
+  }
+  matchcard()
+})
+$('#right').on('click', '.card', function () {
+  if ($('#right .card-open').length < 1 && !$(this).hasClass('card-open')) {
+    $(this).addClass('card-open')
+    // console.log($('#right .card-open').eq(0).attr('data-card-1'));
+    tempright = $('#right .card-open').eq(0).attr('data-card-1')
+  }
+  matchcard()
+})
+function matchcard(){
+  if ($('.card-open').length === 2){
+    if(templeft === tempright){
+      // 增加註解內的文字用一個function()
+      note()
+      $('.card-open').addClass('card-ok')
+      $('.card-open .card-front').fadeTo(1000,0)
+      $('.card-open .card-back').fadeTo(1000,0)
+    }
+  setTimeout(()=>{
+    $('.card-open').each(function(){
+      if($(this).find('.card-front').css('opacity') != 1){
+        $(this).css({
+          'opacity':'0',
+          'transform':'rotateY(180deg)'
+        })
+        $('.card-open').removeClass('card-open')
+      }
+    })
+    $('.card-open').removeClass('card-open')
+    if($('.card-ok').length === 16){
+      Swal.fire({
+        title: '恭喜過關',
+        text: '123',
+        width: 600,
+        padding: '3rem',
+        imageUrl: 'images/minion-congrats.gif',
+        timer: 3000,
+        background: '#fff',
+        showConfirmButton: false
+      })
+    }
+  },1000)
+  }
+}
+const description = document.querySelector('.description')
+let text = ''
+let title = ''
+type = []
+let index = 0
+function write(index) {
+  if (index < type.length) {
+    description.innerHTML += type[index]
+    let timer = setTimeout(write.bind(this), 250, ++index)
+  }else{
+    clearInterval(timer)
+  }
+}
+function note(){
+  $.getJSON('./festival.json', function(data){
+    // 把註解塞入相對應文字
+    text = data[templeft-1].text // 註解
+    title = data[templeft-1].title // 除夕
+    // 加入打字效果
+    type = text.split('')
+    festival.push(title)
+    description.innerHTML = ''
+    const audio = document.getElementById("audio");
+    audio.src = `./mp3/${title}.mp3`;
+    audio.play(); 
+    write(index)
+  });
+}
+</script>
+</body>
+</html>
